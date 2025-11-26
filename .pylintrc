@@ -1,2 +1,4 @@
 [MASTER]
-ignore=.venv
+ignore=venv,.venv
+ignore-patterns=^\.venv.*,^venv.*
+ignore-paths=^venv/.*,^\.venv/.*

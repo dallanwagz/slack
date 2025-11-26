@@ -227,7 +227,6 @@ def handle_request(request, path):
 
 # Define the App Class
 class SlackConnector(phantom.BaseConnector):
-
     debug_logging = False
 
     def __init__(self):
@@ -256,15 +255,15 @@ class SlackConnector(phantom.BaseConnector):
         try:
             message_str = str(message)
         except:
-            message_str = 'Failed to cast message to string'
+            message_str = "Failed to cast message to string"
 
         if self.debug_logging:
             # When debug_logging is True: ALWAYS print to debug log AND save progress
-            self.debug_print('Slack', message_str)
+            self.debug_print("Slack", message_str)
             self.save_progress(message_str)
         elif force:
             # When forced: print to debug log AND save progress
-            self.debug_print('Slack', message_str)
+            self.debug_print("Slack", message_str)
             self.save_progress(message_str)
 
     def encrypt_state(self, encrypt_var, token_name):
@@ -336,7 +335,7 @@ class SlackConnector(phantom.BaseConnector):
                 return self.set_status(phantom.APP_ERROR, SLACK_DECRYPTION_ERROR)
 
         try:
-            self.debug_logging = config.get('debug_logging', False)
+            self.debug_logging = config.get("debug_logging", False)
         except:
             pass
 
@@ -915,10 +914,10 @@ class SlackConnector(phantom.BaseConnector):
         if file_path:
             return os.path.getsize(file_path)
         elif content:
-            return len(content.encode('utf-8'))
+            return len(content.encode("utf-8"))
         return 0
 
-    def _upload_file(self, param):  # noqa: C901
+    def _upload_file(self, param):
         """Upload file to Slack using the new 3-step upload process.
 
         This method implements the new Slack file upload API:
@@ -955,10 +954,7 @@ class SlackConnector(phantom.BaseConnector):
 
                 ret_val, users_resp = self._make_slack_rest_call(action_result, SLACK_USER_LIST, list_params)
                 if not ret_val:
-                    return action_result.set_status(
-                        phantom.APP_ERROR,
-                        "Failed to look up user for username conversion"
-                    )
+                    return action_result.set_status(phantom.APP_ERROR, "Failed to look up user for username conversion")
 
                 members = users_resp.get("members", [])
 
@@ -978,10 +974,7 @@ class SlackConnector(phantom.BaseConnector):
                     break
 
             if not found:
-                return action_result.set_status(
-                    phantom.APP_ERROR,
-                    f"Could not find user with username: {username}"
-                )
+                return action_result.set_status(phantom.APP_ERROR, f"Could not find user with username: {username}")
 
             # For DMs, we need to open a conversation to get a channel ID
             self._debug_log(f"Opening DM conversation with user: {destination}")
@@ -992,10 +985,7 @@ class SlackConnector(phantom.BaseConnector):
                 destination = channel.get("id")
                 self._debug_log(f"Opened DM channel: {destination}")
             else:
-                return action_result.set_status(
-                    phantom.APP_ERROR,
-                    "Failed to open DM conversation with user"
-                )
+                return action_result.set_status(phantom.APP_ERROR, "Failed to open DM conversation with user")
 
         elif destination.startswith("#"):
             # For #channel-name, convert to channel ID (required by files.completeUploadExternal)
@@ -1004,22 +994,16 @@ class SlackConnector(phantom.BaseConnector):
             self._debug_log("Note: For faster uploads in large workspaces, use channel ID directly (e.g., C1234567890)")
 
             # Get team_id to potentially speed up conversations.list
-            team_id = None
-            if not hasattr(self, '_team_id') or not self._team_id:
+            team_id = getattr(self, "_team_id", None)
+            if not team_id:
                 ret_val, auth_resp = self._make_slack_rest_call(action_result, SLACK_AUTH_TEST, {})
                 if ret_val and auth_resp:
                     team_id = auth_resp.get("team_id")
                     self._team_id = team_id  # Cache for future use
                     self._debug_log(f"Got team_id: {team_id}")
-            else:
-                team_id = self._team_id
 
             # Use conversations.list with recommended limit per Slack docs
-            list_params = {
-                "types": "public_channel,private_channel",
-                "exclude_archived": "true",
-                "limit": 1000
-            }
+            list_params = {"types": "public_channel,private_channel", "exclude_archived": "true", "limit": 1000}
 
             # Add team_id if we have it (for org-level tokens)
             if team_id:
@@ -1042,11 +1026,10 @@ class SlackConnector(phantom.BaseConnector):
                                 phantom.APP_ERROR,
                                 "Timeout while looking up channel. Your workspace has many channels. "
                                 "Please use the channel ID directly instead of #channel-name. "
-                                "To find channel ID: Right-click channel > View channel details > Copy channel ID"
+                                "To find channel ID: Right-click channel > View channel details > Copy channel ID",
                             )
                         return action_result.set_status(
-                            phantom.APP_ERROR,
-                            f"Failed to look up channel: {error_msg}. Try using channel ID directly (e.g., C1234567890)"
+                            phantom.APP_ERROR, f"Failed to look up channel: {error_msg}. Try using channel ID directly (e.g., C1234567890)"
                         )
 
                     channels = channels_resp.get("channels", [])
@@ -1073,18 +1056,15 @@ class SlackConnector(phantom.BaseConnector):
                         phantom.APP_ERROR,
                         f"Timeout while looking up channel '{channel_name}'. Your workspace has many channels. "
                         f"Please use the channel ID directly instead of #channel-name. "
-                        f"To find channel ID: Right-click channel > View channel details > Copy channel ID"
+                        f"To find channel ID: Right-click channel > View channel details > Copy channel ID",
                     )
-                return action_result.set_status(
-                    phantom.APP_ERROR,
-                    f"Error looking up channel: {error_msg}"
-                )
+                return action_result.set_status(phantom.APP_ERROR, f"Error looking up channel: {error_msg}")
 
             if not found:
                 return action_result.set_status(
                     phantom.APP_ERROR,
                     f"Could not find channel '{channel_name}'. Make sure the bot is a member of the channel, "
-                    f"or use the channel ID directly (e.g., C1234567890)"
+                    f"or use the channel ID directly (e.g., C1234567890)",
                 )
 
         file_content = None
@@ -1149,10 +1129,7 @@ class SlackConnector(phantom.BaseConnector):
 
         # STEP 1: Get upload URL from Slack
         self._debug_log(f"Step 1: Getting upload URL for file '{file_name}' (size: {file_size} bytes)")
-        get_url_params = {
-            "filename": file_name,
-            "length": file_size
-        }
+        get_url_params = {"filename": file_name, "length": file_size}
 
         # Add filetype only for text content (not for vault files)
         if use_filetype and filetype:
@@ -1172,10 +1149,7 @@ class SlackConnector(phantom.BaseConnector):
         file_id = url_resp.get("file_id")
 
         if not upload_url or not file_id:
-            return action_result.set_status(
-                phantom.APP_ERROR,
-                f"{SLACK_ERROR_GETTING_UPLOAD_URL}: Missing upload_url or file_id in response"
-            )
+            return action_result.set_status(phantom.APP_ERROR, f"{SLACK_ERROR_GETTING_UPLOAD_URL}: Missing upload_url or file_id in response")
 
         self._debug_log(f"Step 1 complete: Received upload URL and file_id: {file_id}")
 
@@ -1193,25 +1167,17 @@ class SlackConnector(phantom.BaseConnector):
                     # Upload using POST with multipart form data
                     # Form field MUST be named "filename" per Slack API docs
                     self._debug_log("Uploading via multipart form with field 'filename'")
-                    upload_response = requests.post(
-                        upload_url,
-                        files={'filename': (file_name, file_data)},
-                        timeout=SLACK_DEFAULT_TIMEOUT
-                    )
+                    upload_response = requests.post(upload_url, files={"filename": (file_name, file_data)}, timeout=SLACK_DEFAULT_TIMEOUT)
             else:
                 # Upload text content
-                file_data = file_content.encode('utf-8')
+                file_data = file_content.encode("utf-8")
                 self._debug_log(f"Encoded {len(file_data)} bytes of text content: '{file_content}'")
                 self._debug_log(f"Filename for upload: {file_name}")
 
                 # Upload using POST with multipart form data
                 # Form field MUST be named "filename" per Slack API docs
                 self._debug_log("Uploading via multipart form with field 'filename'")
-                upload_response = requests.post(
-                    upload_url,
-                    files={'filename': (file_name, file_data)},
-                    timeout=SLACK_DEFAULT_TIMEOUT
-                )
+                upload_response = requests.post(upload_url, files={"filename": (file_name, file_data)}, timeout=SLACK_DEFAULT_TIMEOUT)
 
             self._debug_log(f"Upload response status: {upload_response.status_code}")
             self._debug_log(f"Upload response headers: {dict(upload_response.headers)}")
@@ -1237,14 +1203,9 @@ class SlackConnector(phantom.BaseConnector):
         self._debug_log(f"Step 3: Sharing to destination: {destination}")
 
         # Build files array with title inside - must be JSON-encoded string
-        files_array = [{
-            "id": file_id,
-            "title": file_name
-        }]
+        files_array = [{"id": file_id, "title": file_name}]
 
-        complete_params = {
-            "files": json.dumps(files_array)
-        }
+        complete_params = {"files": json.dumps(files_array)}
 
         # Add sharing parameters per files.completeUploadExternal documentation
         if destination:

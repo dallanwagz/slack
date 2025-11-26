@@ -3,6 +3,11 @@
 line-length = 145
 target-version = "py39"
 
+# Pylint configuration
+[tool.pylint.master]
+ignore = [".venv", "venv"]
+ignore-patterns = ["^\\.venv.*", "^venv.*"]
+
 [tool.ruff.lint]
 select = [ # Auto-fixable rules only
     "I",    # isort
