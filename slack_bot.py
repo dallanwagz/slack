@@ -698,7 +698,7 @@ class SlackBot:
 
             requests.post(url, data=body, timeout=SLACK_DEFAULT_TIMEOUT)
 
-            self._post_message(msg[last_newline + 1 :], channel, code_block=code_block)
+            self._post_message(msg[last_newline + 1:], channel, code_block=code_block)
 
     def _parse_action(self, command):
         try:
