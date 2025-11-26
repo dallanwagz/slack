@@ -15,7 +15,7 @@
     "type": "information",
     "license": "Copyright (c) 2016-2025 Splunk Inc.",
     "main_module": "slack_connector.py",
-    "app_version": "2.9.4",
+    "app_version": "2.9.5",
     "utctime_updated": "2025-09-22T20:31:45.129883Z",
     "product_vendor": "Slack Technologies",
     "product_name": "Slack",
