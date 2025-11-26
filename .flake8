@@ -1,0 +1,6 @@
+[flake8]
+# E203: whitespace before ':' (conflicts with black/ruff formatting)
+# This error conflicts with PEP 8 compliant formatters
+extend-ignore = E203
+max-line-length = 180
+max-complexity = 28

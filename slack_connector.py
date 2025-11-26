@@ -917,7 +917,7 @@ class SlackConnector(phantom.BaseConnector):
             return len(content.encode("utf-8"))
         return 0
 
-    def _upload_file(self, param):  # noqa: C901
+    def _upload_file(self, param):
         """Upload file to Slack using the new 3-step upload process.
 
         This method implements the new Slack file upload API:
